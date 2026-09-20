@@ -1,4 +1,4 @@
-from app.main import SessionLocal
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 import os
@@ -8,7 +8,7 @@ import os
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./blog.db")
 
-# print("conected to", DATABASE_URL)
+print("conected to", DATABASE_URL)
 # configure at leat a local database
 engine_kwargs = {}
 if DATABASE_URL.startswith("sqlite"):
@@ -27,7 +27,7 @@ SessionLocal = sessionmaker(
 class Base(DeclarativeBase):
     pass
 
-
+#  a dependence its a functon that can be injectred automatically into the endpoint in fastapi
 def get_db():
     db = SessionLocal()
     try:
