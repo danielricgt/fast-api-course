@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from app.core.db import get_db
 from app.api.v1.post.schemas import (PostPublic, PaginatedPost,PostPublic, PostSummary, PostCreate, PostUpdate)
+from app.core.security import auth2_scheme
 
 from app.api.v1.post.repository import PostRepository
 
@@ -171,3 +172,6 @@ def delete_post(post_id: int, db: Session = Depends(get_db)):
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="an error has ocurred")
     
+@router.get("/secure")
+def secure_endpoint(token:str = Depends(auth2_scheme)):
+    return {"message": "acces with token", "token received":token}
