@@ -13,7 +13,7 @@ FAKE_USERS = {
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/login", response_model=Token)
-def login(form_data:OAuth2PasswordRequestForm  = Depends()):
+async def login(form_data:OAuth2PasswordRequestForm  = Depends()):
      user= FAKE_USERS.get(form_data.username)
      if not user or user["password"] != form_data.password:
          raise HTTPException(
@@ -28,5 +28,5 @@ def login(form_data:OAuth2PasswordRequestForm  = Depends()):
      return {"access_token": token, "token_type" : "bearer"}
      
 @router.get('/read-me', response_model=UserPublic)
-def get_user(current = Depends(get_current_user)):
+async def get_user(current = Depends(get_current_user)):
     return {"email": current["email"], "username": current["username"]}

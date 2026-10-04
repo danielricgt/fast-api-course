@@ -1,16 +1,32 @@
-from math import ceil
-from typing import List, Literal, Optional, Union
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
-from app.core.db import get_db
 from app.api.v1.post.schemas import (PostPublic, PaginatedPost,PostPublic, PostSummary, PostCreate, PostUpdate)
-from app.core.security import auth2_scheme
+from app.core.db import get_db
+from app.core.security import auth2_scheme, get_current_user
+from app.core.security import get_current_user
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from math import ceil
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import Session
+from typing import List, Literal, Optional, Union
+import asyncio
+import time
+import threading
+
 
 from app.api.v1.post.repository import PostRepository
 
-
 router = APIRouter(prefix="/post", tags=["post"])
+
+# @router.get("/sync")
+# def sync_func():
+#     print('SYNC thread', threading.current_thread().name)
+#     time.sleep(8)
+#     return {"message":"sync func finished"}
+
+# @router.get('/async')
+# async def async_funct():
+#    print('ASYNC thread', threading.current_thread().name)
+#    await  asyncio.sleep(8)
+#    return {"message":"async func finished"}
 
 def get_gake_user():
     return {"username":"daniel", "role":"admin"}
@@ -20,6 +36,10 @@ def get_gake_user():
 def read_me(user: dict = Depends(get_gake_user)):
     return {"user": user}
 
+@router.get("/secure") 
+def secure_endpoint(token:str = Depends(auth2_scheme)):
+    return {"message": "access with token", "token received":token}
+ 
 @router.get("",response_model=PaginatedPost)
 def list_post(
      query: Optional[str] = Query(
@@ -115,7 +135,7 @@ def get_post(post_id: int = Path(
     
 
 @router.post("", response_model=PostPublic, response_description="posts created", status_code=status.HTTP_201_CREATED)
-def create_post(post: PostCreate, db: Session = Depends(get_db)):
+def create_post(post: PostCreate, db: Session = Depends(get_db), user = Depends(get_current_user)):
 
     repository = PostRepository(db)
     
@@ -123,7 +143,7 @@ def create_post(post: PostCreate, db: Session = Depends(get_db)):
         post = repository.create_post(
             title=post.title, 
             content=post.content, 
-            author=(post.author.model_dump() if post.author else None ),
+            author=user,
             tags=[tag.model_dump()for tag in post.tags]
             )
         # confirm with a commit
@@ -139,7 +159,7 @@ def create_post(post: PostCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="error creating the post")
 
 @router.put("/{post_id}", response_model=PostPublic, response_description="post updated", response_model_exclude=None,)
-def update_post(post_id: int, data: PostUpdate, db: Session = Depends(get_db)):
+def update_post(post_id: int, data: PostUpdate, db: Session = Depends(get_db), user = Depends(get_current_user)):
     repository =PostRepository(db)
     
     post = repository.get(post_id)
@@ -160,7 +180,7 @@ def update_post(post_id: int, data: PostUpdate, db: Session = Depends(get_db)):
     
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(post_id: int, db: Session = Depends(get_db)):
+def delete_post(post_id: int, db: Session = Depends(get_db), user = Depends(get_current_user)):
     repository = PostRepository(db)
     post = repository.get(post_id)
     if not post:
@@ -172,6 +192,3 @@ def delete_post(post_id: int, db: Session = Depends(get_db)):
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="an error has ocurred")
     
-@router.get("/secure")
-def secure_endpoint(token:str = Depends(auth2_scheme)):
-    return {"message": "acces with token", "token received":token}

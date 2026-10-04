@@ -99,7 +99,7 @@ class PostRepository:
             return tag_obj
         
         tag_obj = TagORM(name=name)
-        self.db.add(tag_obj)
+        self.db.add(tag_obj) 
         self.db.flush() 
         return tag_obj
     
@@ -107,7 +107,7 @@ class PostRepository:
         
         author_object = None
         if author:
-            author_object = self.ensure_author(author['name'], author['email'])
+            author_object = self.ensure_author(author['username'], author['email'])
         post = PostORM(title= title, content = content, author = author_object )
         
         for tag in tags:
