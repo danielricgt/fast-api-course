@@ -1,4 +1,5 @@
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Annotated
+from fastapi import Form
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -24,9 +25,11 @@ class PostBase(BaseModel):
     # HERE we create the data strcuture and attrinutes you wanto to have
     title: str
     content: str 
+   
     # create a list for every object created
     tags: Optional[List[Tag]] = Field(default_factory=list)
     author: Optional[Author] = None
+    image_url: Optional[str] = None
     model_config =ConfigDict(from_attributes=True)
 
 
@@ -59,6 +62,17 @@ class PostCreate(BaseModel):
             if word in value.lower():
                 raise ValueError(f"title cannot contain {word} value ")
         return value
+    
+    @classmethod
+    def as_from(
+        cls,
+        title: Annotated[str, Form(min_length=3)],
+        content: Annotated[str, Form(min_length=10)],
+        tags : Annotated[Optional[list[str]], Form()] = None,
+         
+    ):
+        tag_objects = [Tag(name=t) for t in (tags or []) ]
+        return cls(title= title, content = content, tags = tag_objects)
 
 
 class PostUpdate(BaseModel):

@@ -2,11 +2,12 @@ from app.api.v1.post.schemas import (PostPublic, PaginatedPost,PostPublic, PostS
 from app.core.db import get_db
 from app.core.security import auth2_scheme, get_current_user
 from app.core.security import get_current_user
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from app.services.file_storage import save_uploaded_image
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status, UploadFile, File
 from math import ceil
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
-from typing import List, Literal, Optional, Union
+from typing import List, Literal, Optional, Union, Annotated
 import asyncio
 import time
 import threading
@@ -135,16 +136,22 @@ def get_post(post_id: int = Path(
     
 
 @router.post("", response_model=PostPublic, response_description="posts created", status_code=status.HTTP_201_CREATED)
-def create_post(post: PostCreate, db: Session = Depends(get_db), user = Depends(get_current_user)):
+def create_post(post: Annotated[PostCreate, Depends(PostCreate.as_from)], image: Optional[UploadFile] = File(None) , db: Session = Depends(get_db), user = Depends(get_current_user)):
 
     repository = PostRepository(db)
+    saved= None
     
     try:
+        if image is not None:
+            saved = save_uploaded_image(image)
+        image_url = saved["url"] if saved else None
+    
         post = repository.create_post(
             title=post.title, 
             content=post.content, 
             author=user,
-            tags=[tag.model_dump()for tag in post.tags]
+            tags=[tag.model_dump()for tag in post.tags],
+            image_url= image_url
             )
         # confirm with a commit
         db.commit()
