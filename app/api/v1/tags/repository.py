@@ -10,6 +10,21 @@ class TagRepository():
     def __init__(self, db: Session):
         self.db = db
 
+    def list_tags(self, 
+        search: Optional[str],
+        order_by: str = "id",
+        direction: str = "asc",
+        page: int  = 1,
+        per_page: int = 10
+        ):
+    
+        query = select(TagORM)
+        if search : 
+            query = query.where(func.lower(TagORM.name).ilike(f"%{search.lower()}%"))
+        pass
+
+
+
     def create_tag(self, name: str):
        normalized = name.strip().lower()
        tag_obj = self.db.execute(
