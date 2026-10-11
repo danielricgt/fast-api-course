@@ -1,8 +1,7 @@
 from math import ceil
 from typing import List, Optional, Tuple
-from fastapi import HTTPException
 from sqlalchemy import func, select
-from sqlalchemy.orm import joinedload, relationship, selectinload, sessionmaker, Session, DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import joinedload, selectinload, Session
 from app.models import PostORM, TagORM, AuthorORM
 
 

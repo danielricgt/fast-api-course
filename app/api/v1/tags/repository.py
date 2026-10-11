@@ -1,7 +1,11 @@
+from typing import Optional
+
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.api.v1.tags.schemas import TagPublic
 from app.models.tag import TagORM
+from app.services.pagination import paginated_query
 # this help us to do the db querys
 
 
@@ -21,7 +25,25 @@ class TagRepository():
         query = select(TagORM)
         if search : 
             query = query.where(func.lower(TagORM.name).ilike(f"%{search.lower()}%"))
-        pass
+        allowed_order = {
+            "id": TagORM.id,
+            "name": func.lower(TagORM.name)
+        }
+        result = paginated_query(
+            db = self.db,
+            model = TagORM,
+            base_query= query,
+            page= page,
+            per_page= per_page,
+            order_by= order_by,
+            direction= direction,
+            allowed_order= allowed_order
+        )
+        
+        # this convert from models or orm objetx to an equivalent on pydanctic
+        result["items"] = [TagPublic.model_validate(item) for item in result["items"]]]
+         
+        return result
 
 
 
