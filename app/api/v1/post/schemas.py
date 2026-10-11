@@ -3,18 +3,6 @@ from fastapi import Form
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
-
-class Tag (BaseModel):
-    name: str = Field(
-        ...,
-        max_length=30,
-        min_length=3,
-        description="Tag name"
-    )
-    # here to receive objects not only dictionalt
-    model_config =ConfigDict(from_attributes=True)
-
-
 class Author (BaseModel):
     name: str
     email: EmailStr
