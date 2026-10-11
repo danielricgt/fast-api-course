@@ -16,7 +16,7 @@ class TagPublic (BaseModel):
     # here to receive objects not only dictionalt
     model_config = ConfigDict(from_attributes=True)
 
-    class TagCreate(BaseModel):
+class TagCreate(BaseModel):
         name: str = Field(
             ...,
             min_length=2,
@@ -24,7 +24,7 @@ class TagPublic (BaseModel):
             description="Tag Name"
         )
 
-    class TagUpdate(BaseModel):
+class TagUpdate(BaseModel):
 
         name: Optional[str] = Field(
             ...,
@@ -33,5 +33,5 @@ class TagPublic (BaseModel):
             description="Tag Name"
         )
 
-    class TagWithCount(TagPublic):
+class TagWithCount(TagPublic):
         uses: int

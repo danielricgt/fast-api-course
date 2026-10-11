@@ -161,10 +161,15 @@ def create_post(post: Annotated[PostCreate, Depends(PostCreate.as_from)], image:
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=409, detail="the title already exists")
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="error creating the post")
-
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"database error: {e}")
+    except Exception as e:
+        db.rollback()
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"error creating the post: {e}")
+        
 @router.put("/{post_id}", response_model=PostPublic, response_description="post updated", response_model_exclude=None,)
 def update_post(post_id: int, data: PostUpdate, db: Session = Depends(get_db), user = Depends(get_current_user)):
     repository =PostRepository(db)
