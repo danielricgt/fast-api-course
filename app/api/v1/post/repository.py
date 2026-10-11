@@ -91,11 +91,14 @@ class PostRepository:
     
     
     def ensure_tag(self, name: str) -> TagORM:
+        normalized = name.strip().lower()
         tag_obj = self.db.execute(
-            select(TagORM).where(TagORM.name.ilike (name))
+            select(TagORM).where(func.lower(TagORM.name) == normalized)
         ).scalar_one_or_none()
 
         if tag_obj:
+            
+            
             return tag_obj
         
         tag_obj = TagORM(name=name)
@@ -103,17 +106,21 @@ class PostRepository:
         self.db.flush() 
         return tag_obj
     
-    def create_post(self, title: str, content: str, author: Optional[dict], tags: List[dict], image_url:str) -> PostORM :
+    def create_post(self, title: str, content: str, author: Optional[dict], tags: List[dict[str,str]], image_url:str) -> PostORM :
         
         author_object = None
         if author:
             author_object = self.ensure_author(author['username'], author['email'])
         post = PostORM(title= title, content = content, image_url = image_url , author = author_object )
         
-        for tag in tags:
-            tag_obj = self.ensure_tag(tag['name']) 
+        names = tags[0]["name"].split(",")
+        for name in names:
+            name = name.strip().lower()
+            if not name:
+                continue
+            tag_obj = self.ensure_tag(name)
             post.tags.append(tag_obj)
-            
+
             self.db.add(post)
             self.db.flush()
             self.db.refresh(post)
