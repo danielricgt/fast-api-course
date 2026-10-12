@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import func, select
+from sqlalchemy import Boolean, false, func, select
 from sqlalchemy.orm import Session
 
 from app.api.v1.tags.schemas import TagPublic
@@ -13,6 +13,11 @@ class TagRepository():
     #  the constructor help to create the session on BD
     def __init__(self, db: Session):
         self.db = db
+        
+    def get (self, tag_id: int) -> Optional[TagORM]:
+        tag_find = select(TagORM).where(TagORM.id == tag_id)
+        return self.db.execute(tag_find).scalar_one_or_none()
+
 
     def list_tags(self, 
         search: Optional[str],
@@ -46,7 +51,6 @@ class TagRepository():
         return result
 
 
-
     def create_tag(self, name: str):
        normalized = name.strip().lower()
        tag_obj = self.db.execute(
@@ -61,3 +65,23 @@ class TagRepository():
        self.db.add(tag_obj)
        self.db.flush()
        return tag_obj
+
+
+    def update_tag(self, tag_id: int, name: str ) -> Optional[TagORM]:
+        tag = self.get(tag_id)
+        if not tag :
+            return None
+        if name is not None:
+            tag.name = name.strip().lower()
+        self.db.add(tag)
+        self.db.flush()
+        self.db.refresh(tag)
+        return tag
+        
+    
+    def delete_tag(self, tag_id: int)-> bool:
+        tag = self.get(tag_id)
+        if not tag: 
+            return False
+        self.db.delete(tag)  
+        return True
