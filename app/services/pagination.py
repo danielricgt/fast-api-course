@@ -1,9 +1,9 @@
 
 from math import ceil
 from typing import Any, Dict, Optional
-import select
 
-from sqlalchemy import func
+
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 DEFAULT_PER_PAGE = 10
@@ -12,7 +12,7 @@ MAX_PER_PAGE = 100
 
 def sanitize_pagination(page: int = 1, per_page: int = DEFAULT_PER_PAGE):
     page = max(1, int(page or 1))
-    per_page = min(MAX_PER_PAGE, max(1, int(per_page or 10)))
+    per_page = min(MAX_PER_PAGE, max(1, int(per_page or DEFAULT_PER_PAGE)))
     return page, per_page
 
  

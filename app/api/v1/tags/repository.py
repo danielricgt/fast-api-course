@@ -41,7 +41,7 @@ class TagRepository():
         )
         
         # this convert from models or orm objetx to an equivalent on pydanctic
-        result["items"] = [TagPublic.model_validate(item) for item in result["items"]]]
+        result["items"] = [TagPublic.model_validate(item) for item in result["items"]]
          
         return result
 
