@@ -1,5 +1,5 @@
 
-from app.api.v1.auth.schemas import UserPublic, Token
+from app.api.v1.auth.schemas import UserPublic, TokenResponse
 from app.core.security import create_access_token, get_current_user
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
@@ -12,7 +12,7 @@ FAKE_USERS = {
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=TokenResponse)
 async def login(form_data:OAuth2PasswordRequestForm  = Depends()):
      user= FAKE_USERS.get(form_data.username)
      if not user or user["password"] != form_data.password:
