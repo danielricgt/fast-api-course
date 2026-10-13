@@ -1,19 +1,17 @@
 from datetime import timedelta, timezone, datetime
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from typing import Optional
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-
+from typing import Optional
+from sqlalchemy.orm import Session
+import jwt
 import os
 
-import jwt
+from app.core.db import get_db
+from app.core.config import settings
+from app.models.user import User
 
-# tokens will gut from this endpoint
-SECRET_KEY = os.getenv("SECRET_KEY", "change-me-in-prod") 
-ALGORITH = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES  = int(
-    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
-auth2_scheme = OAuth2PasswordBearer(tokenUrl= "/api/v1/auth/login")
+auth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 credencials_exception = HTTPException(
         status_code= 
@@ -29,27 +27,31 @@ def token_expired():
             headers={"WWW-Autheticate" : "Beared"}
         )
     
+def decore_token (token:str) -> dict:
+    payload = jwt.decode(jwt=token, key=settings.JWT_SECRET, algorithms=[settings.JWT_ALG])
+    return payload
+
 def raise_forbidden():
     return  HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="you have not needed permissions",
         )
 
-def create_access_token(data:dict, expires_delta : Optional[timedelta]=None):
-    to_encode = data.copy() 
-    expire = datetime.now(tz = timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
-    token = jwt.encode(payload=to_encode, key=SECRET_KEY, algorithm=ALGORITH)
-    return token
+# def create_access_token(data:dict, expires_delta : Optional[timedelta]=None):
+#     to_encode = data.copy() 
+#     expire = datetime.now(tz = timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+#     to_encode.update({"exp": expire})
+#     token = jwt.encode(payload=to_encode, key=settings, algorithm=settings.ALGORITH)
+#     return token
+
+def create_access_token(sub: str, minutes: int | None = None) -> str :
+    expire = datetime.now(timezone.utc) + timedelta(minutes= minutes or settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    return jwt.encode({"sub": sub, "expire": expire}, settings.JWT_SECRET,algorithm=settings.JWT_ALG)
+    
 
 
-def decore_token (token:str) -> dict:
-    payload = jwt.decode(jwt=token, key=SECRET_KEY, algorithms=[ALGORITH])
-    return payload
 
-
-def get_current_user(token: str = Depends(auth2_scheme)):
-
+def get_current_user(db: Session = Depends(get_db), token: str = Depends(auth2_scheme)) -> User:
     
     try:
         payload = decore_token(token)
