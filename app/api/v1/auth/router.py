@@ -1,9 +1,8 @@
-from pickle import NONE
+
 
 from fastapi import APIRouter, Depends, HTTPException, status, Path
 from sqlalchemy.orm import Session
 
-from app.api.v1.auth import repository
 from app.api.v1.auth.repository import UserRepository
 from app.api.v1.auth.schemas import RoleUpdate, UserCreate, UserLogin, UserPublic, TokenResponse
 from app.core.db import get_db
@@ -28,8 +27,12 @@ def register(payload: UserCreate, db: Session = Depends (get_db)):
         hash_password=hash_password(payload.password),
         full_name=payload.full_name
     )
+    
+    db.commit()
+    db.refresh(user)
     # this user comes from orm object with model validate verify its what im 
     # waiting whith my pydantic validacion
+    
     
     return  UserPublic.model_validate(user)
     
@@ -55,7 +58,7 @@ def set_role(
     user_id: int = Path(..., ge= 1),
     payload: RoleUpdate = None,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_admin)
+    _admin: User = Depends(require_admin)
     ):
     
     repository = UserRepository(db)
@@ -63,4 +66,6 @@ def set_role(
     if not user:
         raise HTTPException (status_code=404, detail="user not found")
     updated = repository.set_role(user, payload.role) 
+    db.commit()
+    db.refresh(updated)
     return UserPublic.model_validate(updated)

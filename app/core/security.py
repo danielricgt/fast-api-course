@@ -59,7 +59,7 @@ def invalid_credentials():
 def create_access_token(sub: str, minutes: int | None = None) -> str:
     expire = datetime.now(
         timezone.utc) + timedelta(minutes=minutes or settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return jwt.encode({"sub": sub, "expire": expire}, settings.JWT_SECRET, algorithm=settings.JWT_ALG)
+    return jwt.encode({"sub": sub, "exp": expire}, settings.JWT_SECRET, algorithm=settings.JWT_ALG)
 
 
 def get_current_user(db: Session = Depends(get_db), token: str = Depends(auth2_scheme)) -> User:

@@ -20,7 +20,7 @@ class User (Base):
     hash_password : Mapped[str] = mapped_column(String(255), nullable=False)
     full_name : Mapped[str] = mapped_column(String(120), nullable=False)
     role: Mapped[Role] = mapped_column(
-        Enum("user","editor", "admin", name="role_enum", default="user"))
+        Enum("user","editor", "admin", name="role_enum"), default="user")
     is_active: Mapped[boolean] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     
