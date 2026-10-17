@@ -1,14 +1,14 @@
-import bdb
-from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from pickle import NONE
+
+from fastapi import APIRouter, Depends, HTTPException, status, Path
 from sqlalchemy.orm import Session
 
 from app.api.v1.auth import repository
 from app.api.v1.auth.repository import UserRepository
-from app.api.v1.auth.schemas import UserCreate, UserLogin, UserPublic, TokenResponse
+from app.api.v1.auth.schemas import RoleUpdate, UserCreate, UserLogin, UserPublic, TokenResponse
 from app.core.db import get_db
-from app.core.security import create_access_token, get_current_user, hash_password, verify_password
+from app.core.security import create_access_token, get_current_user, hash_password, verify_password, require_admin
+from app.models import user
 from app.models.user import User
 
 # FAKE_USERS = {
@@ -49,3 +49,18 @@ async def login(payload: UserLogin, db: Session = Depends(get_db)):
 @router.get('/read-me', response_model=UserPublic)
 async def get_user(current : User = Depends(get_current_user)):
     return UserPublic.model_validate(current)
+
+@router.put("/role/{user_id}", response_model=UserPublic)
+def set_role(
+    user_id: int = Path(..., ge= 1),
+    payload: RoleUpdate = None,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+    ):
+    
+    repository = UserRepository(db)
+    user = repository.get(user_id)
+    if not user:
+        raise HTTPException (status_code=404, detail="user not found")
+    updated = repository.set_role(user, payload.role) 
+    return UserPublic.model_validate(updated)
