@@ -1,15 +1,15 @@
 
 
-from datetime import UTC, datetime
-from email.policy import default
-from os import name
-from typing import Literal
+from datetime import datetime
+from typing import List, Literal
 from xmlrpc.client import boolean
 
 from sqlalchemy import Boolean, DateTime, Enum, String
 
 from app.core.db import Base
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.post import PostORM
 
 Role = Literal ["user", "admin", "editor"]
 
@@ -24,4 +24,6 @@ class User (Base):
     is_active: Mapped[boolean] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     
+        # relation betwen author and postorm
+    posts: Mapped[List["PostORM"]] = relationship(back_populates="user")
     
