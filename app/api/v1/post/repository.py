@@ -2,7 +2,7 @@ from math import ceil
 from typing import List, Optional, Tuple
 from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload, selectinload, Session
-from app.models import PostORM, TagORM, AuthorORM
+from app.models import PostORM, TagORM
 
 
 class PostRepository:

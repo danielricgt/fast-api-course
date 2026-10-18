@@ -7,8 +7,9 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.core.db import Base
 
 if TYPE_CHECKING:
-    from .author import AuthorORM
+    from .user import User
     from .tag import TagORM
+    from .category import CategoryORM
 
 post_tags = Table(
     "post_tags",
@@ -31,9 +32,16 @@ class PostORM(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now)
     # relationship with author table(foreign key)
-    author_id: Mapped[Optional[int]] = mapped_column(ForeignKey("author.id"), nullable=True)
-    author: Mapped[Optional["AuthorORM"]] = relationship(
+    
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    user: Mapped[Optional["User"]] = relationship(
         back_populates="posts")
+    category_id : Mapped[Optional[int]] = mapped_column(
+        ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True)
+    
+    category = relationship("CategoryORM", back_populates="posts")
+    
+    
     tags: Mapped[List["TagORM"]] = relationship(secondary="post_tags",
                                                 back_populates="posts",
                                                 lazy="selectin",
