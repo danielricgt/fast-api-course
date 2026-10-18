@@ -96,8 +96,8 @@ def require_role(min_role: Literal["user", "editor", "admin"]):
     return evaluation
 
 require_user = require_role("user")
-require_editor = require_role("admin")
-require_admin = require_role("editor")
+require_editor = require_role("editor")
+require_admin = require_role("admin")
 
 
 def hash_password(plain: str) -> str:
