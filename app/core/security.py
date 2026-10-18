@@ -108,9 +108,9 @@ def verify_password(plain: str, hashed: str) -> bool:
     return password_hash.verify(plain, hashed)
 
 
-async def oauth2_ptoken(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def   oauth2_ptoken(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     repository = UserRepository(db)
-    user = repository.get_by_email(form.username)
+    user = repository.get_by_email(form.username) 
     if not user or not verify_password(form.password, user.hash_password):
         raise invalid_credentials()
     token  = create_access_token(sub = str(user.id ))
