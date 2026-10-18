@@ -1,6 +1,6 @@
 from datetime import timedelta, timezone, datetime
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError, PyJWKError
 from pwdlib import PasswordHash
 from typing import Literal, Optional
@@ -8,11 +8,12 @@ from sqlalchemy.orm import Session
 import jwt
 import os
 
+from app.api.v1.auth.repository import UserRepository
 from app.core.db import get_db
 from app.core.config import settings
 from app.models.user import User
 
-auth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+auth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 password_hash = PasswordHash.recommended()
 
 credencials_exception = HTTPException(
@@ -67,8 +68,7 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(auth2_s
     try:
         payload = decore_token(token)
         sub: Optional[str] = payload.get("sub")
-        username: Optional[str] = payload.get("username")
-        if not sub or not username:
+        if not sub :
             raise credencials_exception
         user_id = int(sub)
         
@@ -81,7 +81,10 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(auth2_s
     
     user = db.get(User, user_id)
     if not user or not user.is_active:
-        return user   
+        
+        raise credencials_exception
+        
+    return user   
 
 def require_role(min_role: Literal["user", "editor", "admin"]):
     order = {"user": 0, "editor" : 1, "admin" : 2}    
@@ -103,3 +106,13 @@ def hash_password(plain: str) -> str:
 
 def verify_password(plain: str, hashed: str) -> bool:
     return password_hash.verify(plain, hashed)
+
+
+async def oauth2_ptoken(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    repository = UserRepository(db)
+    user = repository.get_by_email(form.username)
+    if not user or not verify_password(form.password, user.hash_password):
+        raise invalid_credentials()
+    token  = create_access_token(sub = str(user.id ))
+    return {"access_token": token,
+            "token_type": "bearer  "}

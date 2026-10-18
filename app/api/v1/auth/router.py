@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.api.v1.auth.repository import UserRepository
 from app.api.v1.auth.schemas import RoleUpdate, UserCreate, UserLogin, UserPublic, TokenResponse
 from app.core.db import get_db
-from app.core.security import create_access_token, get_current_user, hash_password, verify_password, require_admin
+from app.core.security import create_access_token, get_current_user, hash_password, oauth2_ptoken, verify_password, require_admin
 from app.models import user
 from app.models.user import User
 
@@ -69,3 +69,7 @@ def set_role(
     db.commit()
     db.refresh(updated)
     return UserPublic.model_validate(updated)
+
+@router.post("/token")
+async def token_swagger_endpoint(response= Depends(oauth2_ptoken) ):
+    return response
