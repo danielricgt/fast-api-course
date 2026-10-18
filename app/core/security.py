@@ -77,7 +77,7 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(auth2_s
     except InvalidTokenError:
         raise credencials_exception
     except PyJWKError:
-        raise invalid_credentials
+        raise invalid_credentials()
     
     user = db.get(User, user_id)
     if not user or not user.is_active:
@@ -91,7 +91,7 @@ def require_role(min_role: Literal["user", "editor", "admin"]):
     
     def evaluation(user: User = Depends(get_current_user)) -> User: 
         if order[user.role] < order[min_role]:
-            raise invalid_credentials
+            raise invalid_credentials()
         return user
     return evaluation
 
