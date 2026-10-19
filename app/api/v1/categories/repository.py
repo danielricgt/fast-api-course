@@ -34,9 +34,9 @@ class CategoryRepository:
         # allow_items = {"name" , "slug"}
         for key, value in updates.items():
             setattr (category, key, value)
-            self.db.add(category)
-            self.db.flush()
-            return category
+        self.db.add(category)
+        self.db.flush()
+        return category
             
              
     def delete (self, category: CategoryORM):
