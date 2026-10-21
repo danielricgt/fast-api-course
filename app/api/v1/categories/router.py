@@ -1,4 +1,6 @@
-from ast import List
+
+
+from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -13,7 +15,7 @@ from app.models import category
 router = APIRouter(prefix="/category", tags=["category"])
 
 
-@router.get("/", response_model=List(CategoryPublic))
+@router.get("/", response_model=List[CategoryPublic])
 def list_categories(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
     repository = CategoryRepository(db)
     return repository.list_many(akip=skip, limit=limit)

@@ -1,12 +1,13 @@
-import os
-from fastapi import FastAPI
-from dotenv import load_dotenv
-from app.core.db import Base, engine
-from app.api.v1.post.router import router as post_router
 from app.api.v1.auth.router import router as auth_router
-from app.api.v1.uploads.router import router as file_router  
+from app.api.v1.categories.router import router as category_router 
+from app.api.v1.post.router import router as post_router
 from app.api.v1.tags.router import router as tags_router
+from app.api.v1.uploads.router import router as file_router  
+from app.core.db import Base, engine
+from dotenv import load_dotenv
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+import os
 
 # we need to upload the .env
 load_dotenv()
@@ -24,9 +25,10 @@ def create_app() -> FastAPI:
     app.include_router(post_router)
     app.include_router(file_router)
     app.include_router(tags_router)
+    app.include_router(category_router)
     # this prevent error
     os.makedirs(MEDIA_DIR, exist_ok=True)
-    # app images to disk using and endpointx
+    # app images to disk using and endpoint
     app.mount("/media", StaticFiles(directory=MEDIA_DIR), name = "media")
     
     return app

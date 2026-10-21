@@ -1,9 +1,8 @@
 # only takes the task to save a file in disk
-import asyncio
 import os
 import shutil  # this allow me to manipulate system files
 import uuid
-from fastapi import APIRouter, File, UploadFile, HTTPException, status
+from fastapi import UploadFile, HTTPException, status
 
 
 MEDIA_DIR = "app/media"
