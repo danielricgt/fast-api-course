@@ -8,7 +8,7 @@ from app.models.category import CategoryORM
 
 class CategoryRepository:
     
-    def _init_(self, db: Session):
+    def __init__(self, db: Session):
         self.db = db
     def list_many(self, *, skip: int = 0, limit: int = 50) -> Sequence[CategoryORM]:
         query = (select (CategoryORM).offset(skip).limit(limit))
@@ -39,5 +39,6 @@ class CategoryRepository:
         return category
             
              
-    def delete (self, category: CategoryORM):
+    def delete (self, category: CategoryORM) -> None:
+        
         self.db.delete(category)

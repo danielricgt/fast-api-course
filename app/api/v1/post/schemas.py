@@ -1,7 +1,11 @@
+from operator import ge
 from typing import List, Literal, Optional, Annotated
 from fastapi import Form
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+
+from app.api.v1.categories.schemas import CategoryPublic
+from app.models.category import CategoryORM
 
 
 class Tag (BaseModel):
@@ -29,6 +33,7 @@ class PostBase(BaseModel):
     # create a list for every object created
     tags: Optional[List[Tag]] = Field(default_factory=list)
     author: Optional[Author] = None
+    category : Optional[CategoryPublic]= None
     image_url: Optional[str] = None
     model_config =ConfigDict(from_attributes=True)
 
@@ -51,7 +56,9 @@ class PostCreate(BaseModel):
             "This is a valid content cause has 10 or more caracters"
         ]
     )
+    category_id : Optional[int]= None
     tags: Optional[List[Tag]] = Field(default_factory=list)  # []
+    
     # author: Optional[Author] = None
 
     @field_validator("title")
@@ -68,11 +75,12 @@ class PostCreate(BaseModel):
         cls,
         title: Annotated[str, Form(min_length=3)],
         content: Annotated[str, Form(min_length=10)],
+        category_id: Annotated[int, Form(ge=1)],
         tags : Annotated[Optional[list[str]], Form()] = None,
          
     ):
         tag_objects = [Tag(name=t) for t in (tags or []) ]
-        return cls(title= title, content = content, tags = tag_objects)
+        return cls(title= title, content = content, category_id=category_id, tags = tag_objects)
 
 
 class PostUpdate(BaseModel):

@@ -3,6 +3,7 @@ from app.api.v1.post.schemas import (
 from app.core.db import get_db
 from app.core.security import auth2_scheme, get_current_user
 from app.core.security import get_current_user, require_user, require_admin, require_editor
+from app.models import user
 from app.models.user import User
 from app.services.file_storage import save_uploaded_image
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status, UploadFile, File
@@ -158,7 +159,8 @@ def create_post(
         post = repository.create_post(
             title=post.title,
             content=post.content,
-            author={"username": _admin.full_name, "email":_admin.email},
+            author=user,
+            cateogry_id = post.category_id,
             tags=[tag.model_dump()for tag in post.tags],
             image_url=image_url
         )

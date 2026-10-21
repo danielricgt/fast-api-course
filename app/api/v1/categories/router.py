@@ -18,7 +18,7 @@ router = APIRouter(prefix="/category", tags=["category"])
 @router.get("/", response_model=List[CategoryPublic])
 def list_categories(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
     repository = CategoryRepository(db)
-    return repository.list_many(akip=skip, limit=limit)
+    return repository.list_many(skip=skip, limit=limit)
 
 
 @router.post("/", response_model=CategoryPublic, status_code=status.HTTP_201_CREATED)
@@ -64,6 +64,6 @@ def delete_category(category_id: int, db: Session = Depends(get_db)):
     category = repository.get(category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
-    repository.delete(category_id)
+    repository.delete(category)
     db.commit()
     return None

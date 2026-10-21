@@ -11,7 +11,7 @@ class CategoryORM(Base):
     slug : Mapped[str] = mapped_column(String(32), unique=True, index=True)
     
     # backpopulate indicate how im gonna communicate in the other why how post access to category
-    post = relationship(
+    posts = relationship(
         "PostORM", back_populates="category", cascade="all, delete", passive_deletes=True)
     
     
