@@ -146,7 +146,7 @@ def create_post(
         post: Annotated[PostCreate, Depends(PostCreate.as_from)],
         image: Optional[UploadFile] = File(None),
         db: Session = Depends(get_db),
-        _admin: User = Depends(require_admin)):
+        current_user: User = Depends(require_editor)):
 
     repository = PostRepository(db)
     saved = None
@@ -159,8 +159,8 @@ def create_post(
         post = repository.create_post(
             title=post.title,
             content=post.content,
-            author=user,
-            cateogry_id = post.category_id,
+            author=current_user,
+            category_id = post.category_id,
             tags=[tag.model_dump()for tag in post.tags],
             image_url=image_url
         )

@@ -7,7 +7,6 @@ from app.api.v1.auth.repository import UserRepository
 from app.api.v1.auth.schemas import RoleUpdate, UserCreate, UserLogin, UserPublic, TokenResponse
 from app.core.db import get_db
 from app.core.security import create_access_token, get_current_user, hash_password, oauth2_ptoken, verify_password, require_admin
-from app.models import user
 from app.models.user import User
 
 # FAKE_USERS = {

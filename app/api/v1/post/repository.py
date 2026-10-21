@@ -46,7 +46,7 @@ class PostRepository:
         #     current_page = 1
         # else:
         #     current_page = min(page, total_pages)
-        order_col = PostORM.id if order_by == "id" else order_by == "id"
+        order_col = PostORM.id if order_by == "id" else PostORM.title
 
         results = results.order_by(
             order_col.asc() if direction == "asc" else order_col.desc())
@@ -73,7 +73,7 @@ class PostRepository:
         return self.db.execute(post_list).scalars().all()
         
 
-    def ensure_author(self, name: str, email: str) -> User:
+    def ensure_author(self, full_name: str, email: str) -> User:
        
         author_obj = self.db.execute(
             select(User).where(User.email ==email)
@@ -124,9 +124,9 @@ class PostRepository:
             tag_obj = self.ensure_tag(name)
             post.tags.append(tag_obj)
 
-            self.db.add(post)
-            self.db.flush()
-            self.db.refresh(post)
+        self.db.add(post)
+        self.db.flush()
+        self.db.refresh(post)
         return post
     
     def update_post(self, post: PostORM, updates: dict) -> PostORM:
